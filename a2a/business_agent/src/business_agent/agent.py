@@ -40,7 +40,18 @@ from .payment_processor import MockPaymentProcessor
 from .store import RetailStore
 
 
-store = RetailStore()
+stores = {
+    "itau": RetailStore("products.json"),
+    "gemini": RetailStore("products_gemini.json"),
+    "mel": RetailStore("products_mel.json"),
+}
+
+
+def _get_store(tool_context: ToolContext) -> RetailStore:
+    store_id = tool_context.state.get("store_id", "itau")
+    return stores.get(store_id, stores["itau"])
+
+
 mpp = MockPaymentProcessor()
 
 
@@ -60,12 +71,37 @@ def search_shopping_catalog(tool_context: ToolContext, query: str) -> dict:
 
     """
     try:
-        product_results = store.search_products(query)
+        generic_phrases = ["quais produtos", "produtos disponiveis", "what products", "all products"]
+        if any(phrase in query.lower() for phrase in generic_phrases):
+            query = ""
+            
+        product_results = _get_store(tool_context).search_products(query)
         return {"a2a.product_results": product_results.model_dump(mode="json")}
     except Exception:
         logging.exception("There was an error searching the product catalog.")
         return _create_error_response(
             "Sorry, there was an error searching the product catalog, "
+            "please try again later."
+        )
+
+
+def list_all_products(tool_context: ToolContext) -> dict:
+    """List all products available in the catalog.
+
+    Args:
+        tool_context: The tool context for the current request.
+
+    Returns:
+        dict: Returns the response from the tool with success or error status.
+
+    """
+    try:
+        product_results = _get_store(tool_context).search_products("")
+        return {"a2a.product_results": product_results.model_dump(mode="json")}
+    except Exception:
+        logging.exception("There was an error listing all products.")
+        return _create_error_response(
+            "Sorry, there was an error listing products, "
             "please try again later."
         )
 
@@ -91,7 +127,7 @@ def add_to_checkout(
         return _create_error_response("There was an error creating UCP metadata")
 
     try:
-        checkout = store.add_to_checkout(
+        checkout = _get_store(tool_context).add_to_checkout(
             ucp_metadata, product_id, quantity, checkout_id
         )
         if not checkout_id:
@@ -129,7 +165,7 @@ def remove_from_checkout(tool_context: ToolContext, product_id: str) -> dict:
     try:
         return {
             UCP_CHECKOUT_KEY: (
-                store.remove_from_checkout(checkout_id, product_id).model_dump(
+                _get_store(tool_context).remove_from_checkout(checkout_id, product_id).model_dump(
                     mode="json"
                 )
             ),
@@ -163,7 +199,7 @@ def update_checkout(tool_context: ToolContext, product_id: str, quantity: int) -
     try:
         return {
             UCP_CHECKOUT_KEY: (
-                store.update_checkout(checkout_id, product_id, quantity).model_dump(
+                _get_store(tool_context).update_checkout(checkout_id, product_id, quantity).model_dump(
                     mode="json"
                 )
             ),
@@ -193,7 +229,7 @@ def get_checkout(tool_context: ToolContext) -> dict:
     if not checkout_id:
         return _create_error_response("A Checkout has not yet been created.")
 
-    checkout = store.get_checkout(checkout_id)
+    checkout = _get_store(tool_context).get_checkout(checkout_id)
     if checkout is None:
         return _create_error_response("Checkout not found with the given ID.")
 
@@ -252,7 +288,7 @@ def update_customer_details(
         last_name=last_name,
     )
 
-    checkout = store.add_delivery_address(checkout_id, address)
+    checkout = _get_store(tool_context).add_delivery_address(checkout_id, address)
 
     if email:
         checkout.buyer = Buyer(email=email)
@@ -276,7 +312,7 @@ async def complete_checkout(tool_context: ToolContext) -> dict:
     if not checkout_id:
         return _create_error_response("A Checkout has not yet been created.")
 
-    checkout = store.get_checkout(checkout_id)
+    checkout = _get_store(tool_context).get_checkout(checkout_id)
 
     if checkout is None:
         return _create_error_response("Checkout not found for the current session.")
@@ -306,7 +342,7 @@ async def complete_checkout(tool_context: ToolContext) -> dict:
             checkout.payment.selected_instrument_id = payment_instrument.root.id
             checkout.payment.instruments = [payment_instrument]
 
-            response = store.place_order(checkout_id)
+            response = _get_store(tool_context).place_order(checkout_id)
             # clear completed checkout from state
             tool_context.state[ADK_USER_CHECKOUT_ID] = None
             return {
@@ -339,7 +375,7 @@ def start_payment(tool_context: ToolContext) -> dict:
     if not checkout_id:
         return _create_error_response("A Checkout has not yet been created.")
 
-    result = store.start_payment(checkout_id)
+    result = _get_store(tool_context).start_payment(checkout_id)
     if isinstance(result, str):
         return {"message": result, "status": "requires_more_info"}
     else:
@@ -441,9 +477,12 @@ root_agent = Agent(
         " Assume the user is logged in as Ricardo Almeida. His address is R. Volkswagen, 1 - Jabaquara, São Paulo - SP, 04344-020."
         " When the user wants to checkout or complete payment, automatically call update_customer_details with this information (First Name: Ricardo, Last Name: Almeida, Street Address: R. Volkswagen, 1, Locality: Jabaquara, Region: São Paulo - SP, Postal Code: 04344-020, Country: BR) and then ask the user to confirm if the address is correct."
         " Always communicate in Portuguese (Brazil)."
+        " IMPORTANT: The product catalog is in English. If the user searches in Portuguese, you MUST translate the search terms to English before calling the search tool."
+        " If the user asks for available products or a general list of products in a generic way (e.g., 'what products do you have', 'quais produtos estao disponiveis'), use the `list_all_products` tool to list all products."
     ),
     tools=[
         search_shopping_catalog,
+        list_all_products,
         add_to_checkout,
         remove_from_checkout,
         update_checkout,

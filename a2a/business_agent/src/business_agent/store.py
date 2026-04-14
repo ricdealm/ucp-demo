@@ -71,13 +71,13 @@ class RetailStore:
     orders.
     """
 
-    def __init__(self):
+    def __init__(self, catalog_filename: str = "products.json"):
         """Initialize the retail store."""
         self._products = {}
         self._checkouts = {}
         self._orders = {}
         self._initialize_ucp_metadata()
-        self._initialize_products()
+        self._initialize_products(catalog_filename)
 
     def _initialize_ucp_metadata(self):
         """Load UCP metadata from data/ucp.json."""
@@ -86,10 +86,10 @@ class RetailStore:
         with ucp_path.open() as f:
             self._ucp_metadata = json.load(f)
 
-    def _initialize_products(self):
+    def _initialize_products(self, catalog_filename: str):
         """Load products from a JSON file and store them for lookup."""
         base_path = Path(__file__).parent
-        products_path = base_path / "data" / "products.json"
+        products_path = base_path / "data" / catalog_filename
         with products_path.open() as f:
             products_data = json.load(f)
             for product_data in products_data:

@@ -261,11 +261,19 @@ class ADKAgentExecutor(AgentExecutor):
             dict: The initial state delta.
 
         """
+        headers = context.call_context.state.get("headers", {})
+        store_id_key = next(
+            (key for key in headers if key.lower() == "x-store-id"),
+            None,
+        )
+        store_id = headers[store_id_key] if store_id_key else "itau"
+
         return {
             ADK_UCP_METADATA_STATE: ucp_metadata,
             ADK_EXTENSIONS_STATE_KEY: context.requested_extensions,
             ADK_PAYMENT_STATE: payment_data,
             ADK_LATEST_TOOL_RESULT: None,
+            "store_id": store_id,
         }
 
     async def _run_agent_and_process_response(

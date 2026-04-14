@@ -1,0 +1,77 @@
+[
+  {
+    "@type": "Product",
+    "productID": "HONEY-001",
+    "name": "Organic Wildflower Honey",
+    "sku": "HONEY-001",
+    "image": ["http://localhost:10999/images/honey_wildflower.png"],
+    "brand": {
+      "@type": "Brand",
+      "name": "BeeHappy"
+    },
+    "offers": {
+      "price": "12.99",
+      "priceCurrency": "USD",
+      "priceSpecification": null,
+      "@type": "Offer",
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": null,
+    "url": "https://example.com/honey-001",
+    "description": "Pure, raw, organic wildflower honey.",
+    "gtin": "9876543210150",
+    "mpn": "BH-WH-001",
+    "category": "Groceries > Pantry > Sweeteners > Honey"
+  },
+  {
+    "@type": "Product",
+    "productID": "HONEY-002",
+    "name": "Manuka Honey MGO 400+",
+    "sku": "HONEY-002",
+    "image": ["http://localhost:10999/images/honey_manuka.png"],
+    "brand": {
+      "@type": "Brand",
+      "name": "Kiwiland"
+    },
+    "offers": {
+      "price": "45.99",
+      "priceCurrency": "USD",
+      "priceSpecification": null,
+      "@type": "Offer",
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": null,
+    "url": "https://example.com/honey-002",
+    "description": "Premium Manuka Honey from New Zealand with MGO 400+.",
+    "gtin": "9876543210151",
+    "mpn": "KL-MH-001",
+    "category": "Groceries > Pantry > Sweeteners > Honey"
+  },
+  {
+    "@type": "Product",
+    "productID": "HONEY-003",
+    "name": "Honey Straws (Pack of 20)",
+    "sku": "HONEY-003",
+    "image": ["http://localhost:10999/images/honey_straws.png"],
+    "brand": {
+      "@type": "Brand",
+      "name": "BeeHappy"
+    },
+    "offers": {
+      "price": "5.99",
+      "priceCurrency": "USD",
+      "priceSpecification": null,
+      "@type": "Offer",
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": null,
+    "url": "https://example.com/honey-003",
+    "description": "Convenient honey straws for on-the-go energy.",
+    "gtin": "9876543210152",
+    "mpn": "BH-HS-001",
+    "category": "Groceries > Snacks > Sweeteners > Honey"
+  }
+]

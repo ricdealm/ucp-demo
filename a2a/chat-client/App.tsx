@@ -75,11 +75,36 @@ function App() {
   const [user_email, _setUserEmail] = useState<string | null>(
     "foo@example.com"
   );
-  const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
+  const [itauMessages, setItauMessages] = useState<ChatMessage[]>([initialMessage]);
+  const [geminiMessages, setGeminiMessages] = useState<ChatMessage[]>([
+    createChatMessage(Sender.MODEL, "Hello, I am Gemini. How can I help you?", { id: "initial_gemini" })
+  ]);
+  const [melMessages, setMelMessages] = useState<ChatMessage[]>([
+    createChatMessage(Sender.MODEL, "Hello, welcome to Mel Shop! How can I help you?", { id: "initial_mel" })
+  ]);
+
+  const [itauContextId, setItauContextId] = useState<string | null>(crypto.randomUUID());
+  const [geminiContextId, setGeminiContextId] = useState<string | null>(crypto.randomUUID());
+  const [melContextId, setMelContextId] = useState<string | null>(crypto.randomUUID());
+
   const [isLoading, setIsLoading] = useState(false);
-  const [contextId, setContextId] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [theme, setTheme] = useState<"itau" | "gemini" | "mel">("itau");
+
+  const messages = theme === "itau" ? itauMessages : theme === "gemini" ? geminiMessages : melMessages;
+  const contextId = theme === "itau" ? itauContextId : theme === "gemini" ? geminiContextId : melContextId;
+  
+  const setMessages = (updater: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
+    if (theme === "itau") setItauMessages(updater);
+    else if (theme === "gemini") setGeminiMessages(updater);
+    else setMelMessages(updater);
+  };
+
+  const setContextId = (value: string | null) => {
+    if (theme === "itau") setItauContextId(value);
+    else if (theme === "gemini") setGeminiContextId(value);
+    else setMelContextId(value);
+  };
   const credentialProvider = useRef(new CredentialProviderProxy());
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -323,6 +348,7 @@ function App() {
           "https://ucp.dev/specification/reference?v=2026-01-11",
         "UCP-Agent":
           'profile="http://localhost:3000/profile/agent_profile.json"',
+        "X-Store-Id": theme,
       };
 
       const response = await fetch("/api", {
@@ -616,6 +642,16 @@ function App() {
                   <div className="mt-1 text-sm text-gray-800">
                     {msg.text}
                   </div>
+                  {msg.auditPayload && (
+                    <details className="mt-2 text-xs">
+                      <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-800 uppercase tracking-wider">
+                        VIEW AUDIT PAYLOAD (Sent to AP2)
+                      </summary>
+                      <pre className="bg-white p-2 border rounded mt-1 overflow-x-auto max-h-60 font-mono text-gray-700">
+                        {JSON.stringify(msg.auditPayload, null, 2)}
+                      </pre>
+                    </details>
+                  )}
                 </div>
               ) : (
                 <div>
@@ -632,6 +668,16 @@ function App() {
                       </summary>
                       <pre className="bg-white p-2 border rounded mt-1 overflow-x-auto max-h-60 font-mono text-gray-700">
                         {JSON.stringify(msg.ucpData, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+                  {msg.auditPayload && (
+                    <details className="mt-2 text-xs">
+                      <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-800 uppercase tracking-wider">
+                        VIEW AUDIT PAYLOAD (Sent to AP2)
+                      </summary>
+                      <pre className="bg-white p-2 border rounded mt-1 overflow-x-auto max-h-60 font-mono text-gray-700">
+                        {JSON.stringify(msg.auditPayload, null, 2)}
                       </pre>
                     </details>
                   )}
