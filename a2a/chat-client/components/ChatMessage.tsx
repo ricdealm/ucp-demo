@@ -40,20 +40,20 @@ interface ChatMessageProps {
   theme?: string;
 }
 
-function TypingIndicator({ agentName, agentLogoUrl }: { agentName: string, agentLogoUrl: string }) {
+function TypingIndicator({ agentName, agentLogoUrl, theme }: { agentName: string, agentLogoUrl: string, theme?: string }) {
   return (
     <div className="w-full my-1 justify-start">
       <div className="flex items-center gap-2 mb-1">
         <div className="flex-shrink-0">
           <img alt="logo" src={agentLogoUrl} className="w-8 h-8" />
         </div>
-        <span className="font-semibold text-gray-700">{agentName}</span>
+        <span className={`font-semibold ${theme === 'gemini' ? 'text-white' : 'text-gray-700'}`}>{agentName}</span>
       </div>
-      <div className="ml-10 px-4 py-3 rounded-2xl shadow-sm bg-gray-200 text-gray-800 self-start inline-block">
+      <div className={`ml-10 px-4 py-3 rounded-2xl shadow-sm ${theme === 'gemini' ? 'bg-transparent' : 'bg-gray-200'} text-gray-800 self-start inline-block`}>
         <div className="flex items-center space-x-2 h-5">
-          <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-          <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-          <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></span>
+          <span className={`h-2 w-2 ${theme === 'gemini' ? 'bg-white' : 'bg-gray-400'} rounded-full animate-bounce [animation-delay:-0.3s]`}></span>
+          <span className={`h-2 w-2 ${theme === 'gemini' ? 'bg-white' : 'bg-gray-400'} rounded-full animate-bounce [animation-delay:-0.15s]`}></span>
+          <span className={`h-2 w-2 ${theme === 'gemini' ? 'bg-white' : 'bg-gray-400'} rounded-full animate-bounce`}></span>
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ function ChatMessageComponent({
   const isUser = message.sender === Sender.USER;
 
   if (message.isLoading) {
-    return <TypingIndicator agentName={agentName} agentLogoUrl={agentLogoUrl} />;
+    return <TypingIndicator agentName={agentName} agentLogoUrl={agentLogoUrl} theme={theme} />;
   }
 
   // User messages are handled separately

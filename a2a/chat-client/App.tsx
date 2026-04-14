@@ -486,6 +486,7 @@ function App() {
                   isLastCheckout={index === lastCheckoutIndex}
                   agentName={themeData[theme].name}
                   agentLogoUrl={themeData[theme].logoUrl}
+                  theme={theme}
                 ></ChatMessageComponent>
               ))}
             </main>
