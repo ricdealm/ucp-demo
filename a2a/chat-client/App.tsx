@@ -33,6 +33,21 @@ type RequestPart =
   | { type: "text"; text: string }
   | { type: "data"; data: Record<string, unknown> };
 
+const themeData = {
+  itau: {
+    name: "Itaú Shop",
+    logoUrl: "/images/itau.png",
+  },
+  gemini: {
+    name: "Gemini",
+    logoUrl: "/images/gemini.png",
+  },
+  mel: {
+    name: "Mel Shop",
+    logoUrl: "/images/mel_shop.png",
+  },
+};
+
 function createChatMessage(
   sender: Sender,
   text: string,
@@ -64,6 +79,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [contextId, setContextId] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"itau" | "gemini" | "mel">("itau");
   const credentialProvider = useRef(new CredentialProviderProxy());
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -384,34 +400,162 @@ function App() {
   const lastCheckoutIndex = messages.map((m) => !!m.checkout).lastIndexOf(true);
 
   return (
-    <div className="flex flex-col h-screen max-h-screen bg-white font-sans">
-      <Header logoUrl={appConfig.logoUrl} title={appConfig.name} />
-      <main
-        ref={chatContainerRef}
-        className="flex-grow overflow-y-auto p-4 md:p-6 space-y-2"
-      >
-        {messages.map((msg, index) => (
-          <ChatMessageComponent
-            key={msg.id}
-            message={msg}
-            onAddToCart={handleAddToCheckout}
-            onCheckout={
-              msg.checkout?.status !== "ready_for_complete"
-                ? handleStartPayment
-                : undefined
-            }
-            onSelectPaymentMethod={handlePaymentMethodSelected}
-            onConfirmPayment={handleConfirmPayment}
-            onCompletePayment={
-              msg.checkout?.status === "ready_for_complete"
-                ? handlePaymentMethodSelection
-                : undefined
-            }
-            isLastCheckout={index === lastCheckoutIndex}
-          ></ChatMessageComponent>
-        ))}
-      </main>
-      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+    <div className="flex h-screen max-h-screen bg-gray-100 font-sans p-4 gap-4">
+      {/* Left Column: Phone Simulator Wrapper */}
+      <div className="w-[40%] flex flex-col justify-center items-center p-4 gap-6">
+        {/* Theme Selector Buttons */}
+        <div className="flex gap-4 mb-2">
+          <button 
+            onClick={() => setTheme('itau')} 
+            className={`w-12 h-12 rounded-full overflow-hidden border-2 ${theme === 'itau' ? 'border-orange-500' : 'border-transparent'} hover:border-orange-500 transition-all`}
+            title="Itaú"
+          >
+            <img src="/images/itau.png" alt="Itaú" className="w-full h-full object-cover" />
+          </button>
+          <button 
+            onClick={() => setTheme('gemini')} 
+            className={`w-12 h-12 rounded-full overflow-hidden border-2 ${theme === 'gemini' ? 'border-blue-500' : 'border-transparent'} hover:border-blue-500 transition-all`}
+            title="Gemini"
+          >
+            <img src="/images/gemini.png" alt="Gemini" className="w-full h-full object-cover" />
+          </button>
+          <button 
+            onClick={() => setTheme('mel')} 
+            className={`w-12 h-12 rounded-full overflow-hidden border-2 ${theme === 'mel' ? 'border-yellow-500' : 'border-transparent'} hover:border-yellow-500 transition-all`}
+            title="Mel Shop"
+          >
+            <img src="/images/mel_shop.png" alt="Mel Shop" className="w-full h-full object-cover" />
+          </button>
+        </div>
+
+        {/* Phone Simulator */}
+        <div 
+          className={`flex-shrink-0 w-[375px] h-[812px] ${theme === 'gemini' ? 'bg-[#131314]' : 'bg-white'} rounded-[40px] shadow-2xl border-[14px] border-black overflow-hidden relative flex flex-col font-['Manrope']`}
+          style={{
+            '--primary-color': theme === 'itau' ? '#ff6f00' : theme === 'gemini' ? '#1a73e8' : '#fbc02d',
+            '--primary-hover': theme === 'itau' ? '#e66200' : theme === 'gemini' ? '#1557b0' : '#f57f17',
+            '--bg-light': theme === 'itau' ? '#ffedd5' : theme === 'gemini' ? '#dbeafe' : '#fef08a',
+            '--text-dark': theme === 'itau' ? '#c2410c' : theme === 'gemini' ? '#1d4ed8' : '#a16207',
+          } as React.CSSProperties}
+        >
+          {/* Speaker/Notch */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-6 bg-black rounded-b-3xl z-20"></div>
+          
+          {/* Phone Content */}
+          <div className={`flex flex-col h-full pt-6 ${theme === 'gemini' ? 'bg-[#131314]' : ''}`}>
+            {theme === 'gemini' ? (
+              <div className="p-4 flex justify-between items-center bg-[#131314] border-b border-gray-800 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <img src="/images/gemini.png" alt="Gemini" className="w-6 h-6" />
+                  <span className="font-bold text-white">Gemini <span className="text-gray-400 text-sm font-normal">3 Pro</span></span>
+                  <span className="material-symbols-outlined text-gray-400 text-sm">expand_more</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-gray-400">work</span>
+                  <span className="bg-[#2f3032] text-white text-xs px-2 py-1 rounded-md font-bold">PRO</span>
+                  <div className="w-8 h-8 rounded-full bg-gray-600 overflow-hidden flex items-center justify-center">
+                    <span className="material-symbols-outlined text-white text-2xl">account_circle</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Header logoUrl={themeData[theme].logoUrl} title={themeData[theme].name} />
+            )}
+            
+            <main
+              ref={chatContainerRef}
+              className="flex-grow overflow-y-auto p-4 space-y-2"
+            >
+              {messages.map((msg, index) => (
+                <ChatMessageComponent
+                  key={msg.id}
+                  message={msg}
+                  onAddToCart={handleAddToCheckout}
+                  onCheckout={
+                    msg.checkout?.status !== "ready_for_complete"
+                      ? handleStartPayment
+                      : undefined
+                  }
+                  onSelectPaymentMethod={handlePaymentMethodSelected}
+                  onConfirmPayment={handleConfirmPayment}
+                  onCompletePayment={
+                    msg.checkout?.status === "ready_for_complete"
+                      ? handlePaymentMethodSelection
+                      : undefined
+                  }
+                  isLastCheckout={index === lastCheckoutIndex}
+                  agentName={themeData[theme].name}
+                  agentLogoUrl={themeData[theme].logoUrl}
+                ></ChatMessageComponent>
+              ))}
+            </main>
+            
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} theme={theme} />
+            
+            {/* Bottom Navigation */}
+            {theme !== 'gemini' && (
+              <nav className="w-full flex justify-around items-center px-4 py-3 border-t border-neutral-100 bg-white flex-shrink-0">
+                <a className="flex flex-col items-center justify-center bg-[var(--bg-light)] text-[var(--text-dark)] rounded-2xl px-3 py-1" href="#">
+                  <span className="material-symbols-outlined">chat_bubble</span>
+                  <span className="text-[10px] font-bold tracking-widest uppercase mt-1">Chat</span>
+                </a>
+                <a className="flex flex-col items-center justify-center text-neutral-500 px-3 py-1 hover:text-[var(--primary-color)] transition-all" href="#">
+                  <span className="material-symbols-outlined">search</span>
+                  <span className="text-[10px] font-bold tracking-widest uppercase mt-1">Explore</span>
+                </a>
+                <a className="flex flex-col items-center justify-center text-neutral-500 px-3 py-1 hover:text-[var(--primary-color)] transition-all" href="#">
+                  <span className="material-symbols-outlined">local_mall</span>
+                  <span className="text-[10px] font-bold tracking-widest uppercase mt-1">Orders</span>
+                </a>
+                <a className="flex flex-col items-center justify-center text-neutral-500 px-3 py-1 hover:text-[var(--primary-color)] transition-all" href="#">
+                  <span className="material-symbols-outlined">person</span>
+                  <span className="text-[10px] font-bold tracking-widest uppercase mt-1">Profile</span>
+                </a>
+              </nav>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column: Details Panel */}
+      <div className="w-[60%] bg-white rounded-xl shadow-lg p-6 overflow-y-auto hidden lg:block">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Behind-the-Scenes Pipeline & Execution Logs</h2>
+        <div className="space-y-4">
+          {messages.map((msg) => (
+            <div key={msg.id} className="border rounded-lg p-4 bg-gray-50 shadow-sm">
+              {msg.sender === Sender.USER ? (
+                <div>
+                  <div className="font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                    CLIENT INPUT RECEIVED
+                  </div>
+                  <div className="mt-1 text-sm text-gray-800">
+                    {msg.text}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                    BACKEND EXECUTION
+                  </div>
+                  <div className="mt-1 text-sm text-gray-800">
+                    {msg.text || "<Action without text>"}
+                  </div>
+                  {msg.ucpData && (
+                    <details className="mt-2 text-xs">
+                      <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-800 uppercase tracking-wider">
+                        VIEW UCP PAYLOAD
+                      </summary>
+                      <pre className="bg-white p-2 border rounded mt-1 overflow-x-auto max-h-60 font-mono text-gray-700">
+                        {JSON.stringify(msg.ucpData, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { useState } from "react";
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
+  theme?: string;
 }
 
 function SendIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -37,7 +38,7 @@ function SendIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
+function ChatInput({ onSendMessage, isLoading, theme }: ChatInputProps) {
   const [inputValue, setInputValue] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -47,6 +48,41 @@ function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
       setInputValue("");
     }
   };
+
+  if (theme === "gemini") {
+    return (
+      <div className="bg-[#131314] p-3 flex-shrink-0">
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center bg-[#1e1f20] rounded-full px-4 py-2 max-w-4xl mx-auto gap-2"
+        >
+          <button type="button" className="text-gray-400 hover:text-white flex items-center justify-center">
+            <span className="material-symbols-outlined">add</span>
+          </button>
+          <button type="button" className="text-gray-400 hover:text-white flex items-center justify-center ml-1">
+            <span className="material-symbols-outlined text-xl">shield</span>
+          </button>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter a prompt for Gemini"
+            className="flex-grow bg-transparent text-white focus:outline-none placeholder-gray-500 p-2"
+            disabled={isLoading}
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !inputValue.trim()}
+            className="w-10 h-10 bg-[#1a73e8] text-white rounded-full flex items-center justify-center disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
+            aria-label="Send message"
+          >
+            <span className="material-symbols-outlined">{isLoading ? 'stop' : 'arrow_upward'}</span>
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-3 border-t border-gray-200 shadow-t-sm flex-shrink-0">
@@ -59,14 +95,14 @@ function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Type your message..."
-          className="flex-grow p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          className="flex-grow p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition"
           disabled={isLoading}
           autoComplete="off"
         />
         <button
           type="submit"
           disabled={isLoading || !inputValue.trim()}
-          className="bg-blue-500 text-white p-3 rounded-full disabled:bg-blue-300 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+          className="bg-[var(--primary-color)] text-white p-3 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[var(--primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2"
           aria-label="Send message"
         >
           <SendIcon />

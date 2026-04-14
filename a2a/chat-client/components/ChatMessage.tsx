@@ -35,16 +35,19 @@ interface ChatMessageProps {
   onConfirmPayment?: (paymentInstrument: PaymentInstrument) => void;
   onCompletePayment?: (checkout: Checkout) => void;
   isLastCheckout?: boolean;
+  agentName: string;
+  agentLogoUrl: string;
+  theme?: string;
 }
 
-function TypingIndicator() {
+function TypingIndicator({ agentName, agentLogoUrl }: { agentName: string, agentLogoUrl: string }) {
   return (
     <div className="w-full my-1 justify-start">
       <div className="flex items-center gap-2 mb-1">
         <div className="flex-shrink-0">
-          <img alt="logo" src={appConfig.logoUrl} className="w-8 h-8" />
+          <img alt="logo" src={agentLogoUrl} className="w-8 h-8" />
         </div>
-        <span className="font-semibold text-gray-700">{appConfig.name}</span>
+        <span className="font-semibold text-gray-700">{agentName}</span>
       </div>
       <div className="ml-10 px-4 py-3 rounded-2xl shadow-sm bg-gray-200 text-gray-800 self-start inline-block">
         <div className="flex items-center space-x-2 h-5">
@@ -82,18 +85,21 @@ function ChatMessageComponent({
   onConfirmPayment,
   onCompletePayment,
   isLastCheckout,
+  agentName,
+  agentLogoUrl,
+  theme,
 }: ChatMessageProps) {
   const isUser = message.sender === Sender.USER;
 
   if (message.isLoading) {
-    return <TypingIndicator />;
+    return <TypingIndicator agentName={agentName} agentLogoUrl={agentLogoUrl} />;
   }
 
   // User messages are handled separately
   if (isUser) {
     return (
       <div className="flex w-full my-1 items-start gap-2 justify-end">
-        <div className="max-w-xs md:max-w-md lg:max-w-2xl px-4 py-2 rounded-2xl shadow-sm bg-blue-500 text-white self-end">
+        <div className={`max-w-xs md:max-w-md lg:max-w-2xl px-4 py-2 rounded-2xl shadow-sm ${theme === 'gemini' ? 'bg-[#2f3032]' : 'bg-[var(--primary-color)]'} text-white self-end`}>
           <div className="whitespace-pre-wrap break-words">{message.text}</div>
         </div>
         <div className="flex-shrink-0 pt-1">
@@ -108,16 +114,16 @@ function ChatMessageComponent({
       <div className="flex items-center gap-2 mb-1">
         <div className="flex-shrink-0">
           <img
-            src={appConfig.logoUrl}
-            alt={appConfig.name}
+            src={agentLogoUrl}
+            alt={agentName}
             className="w-8 h-8"
           />
         </div>
-        <span className="font-semibold text-gray-700">{appConfig.name}</span>
+        <span className={`font-semibold ${theme === 'gemini' ? 'text-white' : 'text-gray-700'}`}>{agentName}</span>
       </div>
       <div className="ml-10 flex-grow min-w-0">
         {message.text && (
-          <div className="max-w-xs md:max-w-md lg:max-w-2xl px-4 py-2 rounded-2xl shadow-sm bg-gray-200 text-gray-800 self-start inline-block">
+          <div className={`max-w-xs md:max-w-md lg:max-w-2xl px-4 py-2 rounded-2xl shadow-sm ${theme === 'gemini' ? 'bg-transparent text-white' : 'bg-gray-200 text-gray-800'} self-start inline-block`}>
             <div className="break-words whitespace-pre-wrap">
               {message.text}
             </div>
@@ -160,19 +166,7 @@ function ChatMessageComponent({
           />
         )}
 
-        {message.ucpData && (
-          <details className="text-xs text-gray-500 mt-2 border-t pt-1 w-full">
-            <summary className="cursor-pointer hover:text-gray-700 font-medium">
-              View UCP Payload
-            </summary>
-            <div className="mt-1 text-gray-600 text-xs italic">
-              {getUcpExplanation(message.ucpData)}
-            </div>
-            <pre className="bg-gray-50 p-2 rounded mt-1 overflow-x-auto max-h-60 text-gray-700 font-mono">
-              {JSON.stringify(message.ucpData, null, 2)}
-            </pre>
-          </details>
-        )}
+
       </div>
     </div>
   );

@@ -15,16 +15,21 @@
  */
 import { appConfig } from "@/config";
 
-function Header() {
+interface HeaderProps {
+  logoUrl: string;
+  title: string;
+}
+
+function Header({ logoUrl, title }: HeaderProps) {
   return (
     <header className="bg-white shadow-sm p-4 border-b border-gray-200 flex-shrink-0">
       <h1 className="text-xl font-bold text-gray-800 text-center flex justify-center items-center">
         <img
-          src={appConfig.logoUrl}
-          alt={appConfig.name}
+          src={logoUrl}
+          alt={title}
           className="h-8 mr-3"
         />
-        <span>{appConfig.titleText}</span>
+        <span>{title}</span>
       </h1>
     </header>
   );

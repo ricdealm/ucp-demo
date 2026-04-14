@@ -239,10 +239,10 @@ server: {
 
 ```typescript
 export const appConfig = new AppProperties(
-  "Business Agent",
+  "Shopping Agent",
   "Your personal shopping assistant.",
   "/images/logo.jpg",
-  "Hello, I am your Business Agent...",
-  "Shop with Business Agent"
+  "Hello, I am your Shopping Agent...",
+  "Shop with Shopping Agent"
 );
 ```
