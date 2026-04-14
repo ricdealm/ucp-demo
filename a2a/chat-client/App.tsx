@@ -120,7 +120,7 @@ function App() {
 
     //find the handler with id "example_payment_provider"
     const handler = checkout.payment.handlers.find(
-      (handler: PaymentHandler) => handler.id === "example_payment_provider"
+      (handler: PaymentHandler) => handler.id === "itau_payment_provider"
     );
     if (!handler) {
       const errorMessage = createChatMessage(
@@ -170,6 +170,15 @@ function App() {
         throw new Error("User email is not set.");
       }
 
+      if (selectedMethod === "instr_pix") {
+        const pixCode = "00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-4266554400005204000053039865802BR5925Ricardo Almeida6009Sao Paulo62070503***6304EB3C";
+        const pixMessage = createChatMessage(
+          Sender.MODEL,
+          `Aqui está o seu código Pix para pagamento:\n\n\`\`\`\n${pixCode}\n\`\`\`\n\n> [!IMPORTANT]\n> O Itaú enviará uma notificação no seu **WhatsApp** para confirmação instantânea. Assim que você aprovar, finalizaremos o seu pedido por aqui automaticamente!`
+        );
+        setMessages((prev) => [...prev, pixMessage]);
+      }
+
       const paymentInstrument =
         await credentialProvider.current.getPaymentToken(
           user_email,
@@ -199,7 +208,19 @@ function App() {
     const userActionMessage = createChatMessage(
       Sender.USER,
       `User confirmed payment.`,
-      { isUserAction: true }
+      { 
+        isUserAction: true,
+        auditPayload: {
+          action: "complete_checkout",
+          source: "UCP Platform",
+          destination: "AP2 Agent (Payment Processor)",
+          payload: {
+            checkout_data: "Active checkout session",
+            payment_data: paymentInstrument,
+          },
+          timestamp: new Date().toISOString()
+        }
+      }
     );
     // Let handleSendMessage manage the loading indicator
     setMessages((prev) => [
@@ -343,6 +364,69 @@ function App() {
 
       for (const part of responseParts) {
         if (part.data) {
+          if (part.data["a2a.ucp.checkout"]) {
+            const checkout = part.data["a2a.ucp.checkout"];
+            checkout.ap2 = {
+              merchant_authorization: "eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleS0xIn0..U0lHTkFUVVJF",
+            };
+            
+            // Inject CartMandate matching the documentation sample
+            combinedBotMessage.cartMandate = {
+              contents: {
+                id: checkout.id || "cart_shoes_123",
+                user_signature_required: false,
+                payment_request: {
+                  method_data: [
+                    {
+                      supported_methods: "CARD",
+                      data: {
+                        payment_processor_url: "http://example.com/pay"
+                      }
+                    }
+                  ],
+                  details: {
+                    id: checkout.order_id || "order_shoes_123",
+                    displayItems: checkout.line_items?.map((item: any) => ({
+                      label: `${item.quantity > 1 ? item.quantity + "x " : ""}${item.item?.title || "Item"}`,
+                      amount: {
+                        currency: checkout.currency || "USD",
+                        value: (item.item?.price || 0) * (item.quantity || 1)
+                      }
+                    })) || [],
+                    shipping_options: null,
+                    modifiers: null,
+                    total: {
+                      label: "Total",
+                      amount: {
+                        currency: checkout.currency || "USD",
+                        value: checkout.totals?.find((t: any) => t.type === "grand_total" || t.type === "total")?.amount || 
+                               checkout.line_items?.reduce((sum: number, item: any) => sum + (item.item?.price || 0) * (item.quantity || 1), 0) || 0
+                      }
+                    }
+                  },
+                  options: {
+                    requestPayerName: false,
+                    requestPayerEmail: false,
+                    requestPayerPhone: false,
+                    requestShipping: true,
+                    shippingType: null
+                  }
+                }
+              },
+              merchant_signature: "sig_merchant_shoes_abc1",
+              timestamp: new Date().toISOString()
+            };
+
+            if (checkout.status === "completed" || checkout.status === "success") {
+              combinedBotMessage.ap2Authorization = {
+                status: "authorized",
+                transaction_id: `ap2_tx_${Math.random().toString(36).substring(7)}`,
+                amount: checkout.totals?.find((t: any) => t.type === "grand_total")?.amount || 0,
+                currency: checkout.currency || "USD",
+                timestamp: new Date().toISOString(),
+              };
+            }
+          }
           combinedBotMessage.ucpData = {
             ...(combinedBotMessage.ucpData || {}),
             ...part.data,

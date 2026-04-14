@@ -20,33 +20,25 @@ import type { PaymentInstrument, PaymentMethod } from "../types";
  * In a real application, this would make a network request to a provider's service.
  */
 export class CredentialProviderProxy {
-  handler_id = "example_payment_provider";
-  handler_name = "example.payment.provider";
+  handler_id = "itau_payment_provider";
+  handler_name = "itau.payment.provider";
 
   _getMockPaymentMethods(): { payment_method_aliases: PaymentMethod[] } {
     return {
       payment_method_aliases: [
         {
-          id: "instr_1",
+          id: "instr_itau",
           type: "card",
-          brand: "amex",
-          last_digits: "1111",
+          brand: "itau",
+          last_digits: "9999",
           expiry_month: 12,
           expiry_year: 2026,
         },
         {
-          id: "instr_2",
+          id: "instr_pix",
           type: "card",
-          brand: "visa",
-          last_digits: "8888",
-          expiry_month: 12,
-          expiry_year: 2026,
-        },
-        {
-          id: "instr_3",
-          type: "card",
-          brand: "mastercard",
-          last_digits: "5555",
+          brand: "pix",
+          last_digits: "0000",
           expiry_month: 12,
           expiry_year: 2026,
         },
@@ -88,10 +80,21 @@ export class CredentialProviderProxy {
     // Simulate network latency
     await new Promise((resolve) => setTimeout(resolve, 500));
     const randomId = crypto.randomUUID();
-    const payment_method =
+    let payment_method =
       this._getMockPaymentMethods().payment_method_aliases.find(
         (method) => method.id === payment_method_id
       );
+
+    if (!payment_method && payment_method_id.startsWith("itau_")) {
+      payment_method = {
+        id: payment_method_id,
+        type: "card",
+        brand: payment_method_id.split("_")[1],
+        last_digits: "1234",
+        expiry_month: 12,
+        expiry_year: 2030,
+      };
+    }
 
     if (!payment_method) {
       return undefined;
@@ -102,8 +105,8 @@ export class CredentialProviderProxy {
       handler_id: this.handler_id,
       handler_name: this.handler_name,
       credential: {
-        type: "token",
-        token: `mock_token_${randomId}`,
+        type: "ap2_mandate",
+        token: `eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleS0xIn0.eyJjaGVja291dF9pZCI6ImM2Nzg5MCJ9.U0lHTkFUVVJF~RElTQ0xPU1VSRTE_${randomId}`,
       },
     };
   }
