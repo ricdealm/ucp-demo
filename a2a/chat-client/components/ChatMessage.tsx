@@ -95,6 +95,19 @@ function ChatMessageComponent({
       <div className="flex w-full my-1 items-start gap-2 justify-end">
         <div className="max-w-xs md:max-w-md lg:max-w-2xl px-4 py-2 rounded-2xl shadow-sm bg-blue-500 text-white self-end">
           <div className="whitespace-pre-wrap break-words">{message.text}</div>
+          {message.auditPayload && (
+            <details className="text-xs text-blue-100 mt-2 border-t border-blue-400 pt-1 w-full">
+              <summary className="cursor-pointer hover:text-white font-medium">
+                View Audit Payload (Sent to AP2)
+              </summary>
+              <div className="mt-1 text-blue-200 text-xs italic">
+                AP2 Submission Data
+              </div>
+              <pre className="bg-blue-600 p-2 rounded mt-1 overflow-x-auto max-h-60 text-white font-mono">
+                {JSON.stringify(message.auditPayload, null, 2)}
+              </pre>
+            </details>
+          )}
         </div>
         <div className="flex-shrink-0 pt-1">
           <UserLogo className="w-8 h-8 text-gray-400" />
@@ -170,6 +183,48 @@ function ChatMessageComponent({
             </div>
             <pre className="bg-gray-50 p-2 rounded mt-1 overflow-x-auto max-h-60 text-gray-700 font-mono">
               {JSON.stringify(message.ucpData, null, 2)}
+            </pre>
+          </details>
+        )}
+
+        {message.cartMandate && (
+          <details className="text-xs text-gray-500 mt-2 border-t pt-1 w-full">
+            <summary className="cursor-pointer hover:text-gray-700 font-medium">
+              View AP2 Cart Mandate
+            </summary>
+            <div className="mt-1 text-gray-600 text-xs italic">
+              AP2 Cart Mandate (Created by Merchant Agent)
+            </div>
+            <pre className="bg-gray-50 p-2 rounded mt-1 overflow-x-auto max-h-60 text-gray-700 font-mono">
+              {JSON.stringify(message.cartMandate, null, 2)}
+            </pre>
+          </details>
+        )}
+
+        {message.paymentInstrument && (
+          <details className="text-xs text-gray-500 mt-2 border-t pt-1 w-full">
+            <summary className="cursor-pointer hover:text-gray-700 font-medium">
+              View AP2 Payload
+            </summary>
+            <div className="mt-1 text-gray-600 text-xs italic">
+              AP2 Payment Instrument Credential
+            </div>
+            <pre className="bg-gray-50 p-2 rounded mt-1 overflow-x-auto max-h-60 text-gray-700 font-mono">
+              {JSON.stringify(message.paymentInstrument, null, 2)}
+            </pre>
+          </details>
+        )}
+
+        {message.ap2Authorization && (
+          <details className="text-xs text-gray-500 mt-2 border-t pt-1 w-full">
+            <summary className="cursor-pointer hover:text-gray-700 font-medium">
+              View AP2 Authorization Payload
+            </summary>
+            <div className="mt-1 text-gray-600 text-xs italic">
+              AP2 Agent Authorization Response
+            </div>
+            <pre className="bg-gray-50 p-2 rounded mt-1 overflow-x-auto max-h-60 text-gray-700 font-mono">
+              {JSON.stringify(message.ap2Authorization, null, 2)}
             </pre>
           </details>
         )}

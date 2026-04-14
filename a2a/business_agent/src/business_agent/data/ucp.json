@@ -29,8 +29,8 @@
   "payment": {
     "handlers": [
       {
-        "id": "example_payment_provider",
-        "name": "example.payment.provider",
+        "id": "itau_payment_provider",
+        "name": "itau.payment.provider",
         "version": "2026-01-11",
         "spec": "https://pay.provider.example/specs/handlers/payments",
         "config_schema": "https://pay.provider.example/specs/handlers/config.json",

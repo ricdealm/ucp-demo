@@ -40,26 +40,29 @@ const PaymentConfirmationComponent: React.FC<PaymentConfirmationProps> = ({
         Confirm Your Purchase
       </h3>
       <div className="flex justify-between items-center text-md mb-4">
-        <span>Selected Payment Method</span>
-        <span>
-          {paymentInstrument.brand.toUpperCase()} ending in{" "}
-          {paymentInstrument.last_digits}
+        <span>Método de Pagamento</span>
+        <span className="font-medium text-gray-800">
+          {paymentInstrument.brand === "pix" 
+            ? "Pix (OOB via WhatsApp)" 
+            : `${paymentInstrument.brand.toUpperCase()} final ${paymentInstrument.last_digits}`}
         </span>
       </div>
-      <p className="text-gray-600 mb-4">
-        Please confirm to complete your purchase.
+      <p className="text-gray-600 mb-4 text-sm">
+        {paymentInstrument.brand === "pix"
+          ? "Você receberá um pedido de confirmação no WhatsApp do Itaú."
+          : "Confirme o pagamento com o seu cartão de crédito."}
       </p>
       <button
         type="button"
         onClick={handleConfirmClick}
         disabled={isConfirming}
-        className="flex justify-center items-center w-full text-center bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition-colors disabled:bg-green-400 disabled:cursor-wait"
+        className="flex justify-center items-center w-full text-center bg-[#EC7000] text-white py-2 rounded-md hover:bg-[#D46000] transition-colors disabled:bg-gray-400 disabled:cursor-wait font-medium"
       >
         {isConfirming ? (
           <>
             <svg
-              title="Processing"
-              aria-label="Processing"
+              title="Processando"
+              aria-label="Processando"
               role="img"
               className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
               xmlns="http://www.w3.org/2000/svg"
@@ -80,10 +83,10 @@ const PaymentConfirmationComponent: React.FC<PaymentConfirmationProps> = ({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Processing...
+            Processando...
           </>
         ) : (
-          "Confirm Purchase"
+          paymentInstrument.brand === "pix" ? "Confirmar Pix" : "Confirmar Compra"
         )}
       </button>
     </div>

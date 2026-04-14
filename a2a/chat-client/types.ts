@@ -66,6 +66,9 @@ export interface ChatMessage {
   checkout?: Checkout;
   paymentInstrument?: PaymentInstrument;
   ucpData?: Record<string, any>;
+  ap2Authorization?: any;
+  auditPayload?: any;
+  cartMandate?: any;
 }
 
 export interface CheckoutTotal {
@@ -107,4 +110,5 @@ export interface Checkout {
   order_id?: string;
   order_permalink_url?: string;
   payment?: Payment;
+  ap2?: any;
 }
